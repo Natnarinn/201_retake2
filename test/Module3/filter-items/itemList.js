@@ -1,73 +1,50 @@
-
-// npm test CommonJS
+//Node.js
 const { template } = require('@babel/core')
-const { getItemsOfCurrentPage, getTotalPages } = require('./lib/paginate.js')
 const products = require('./data/products.js')
 
-// browser ES module
-// import { getItemsOfCurrentPage, getTotalPages } from './lib/paginate.js'
+//Browser
 // import { products } from './data/products.js'
 
-function paginateManagement(items, rows) {
-  const rowsPerPage = rows
-  const products = items
+function itemList(userItems) {
+  const items = userItems
 
-  const showItemsOfCurrentPage = (currentPageNumber) => {
-    const ItemsOfCurrent = getItemsOfCurrentPage(
-        products,
-        currentPageNumber,
-        rowsPerPage)
+  const initialPage = () => {
+    const input = document.querySelector('input')
+    input.addEventListener('input',filterItemsHandler)
+    showItems(items)
+  }
 
-    const productsUl = document.getElementById('products')
-    ItemsOfCurrent.forEach((item)=>{
+  const filterItemsHandler = (event) => {
+    const inputValue = event.target.value.toLowerCase()
+    const filter = items.filter((product) =>
+        product.keywords.toLowerCase().includes(inputValue))
+    showItems(filter)
+  }
+
+  const showItems = (items) => {
+    const productsUl = document.querySelector('#items')
+    productsUl.textContent = ''
+    items.forEach((product) => {
       const liElement = document.createElement('li')
-      liElement.textContent = `ID:${item.id}, NAME:${item.name}`
+      liElement.textContent = `ID:${product.id}, NAME:${product.name}, KEYWORDS:${product.keywords}`
       productsUl.appendChild(liElement)
     })
   }
 
-  const pageHandler = (event) => {
-    const productsUl = document.getElementById('products')
-    productsUl.textContent=''
-
-    const pageStyle = document.querySelectorAll('button')
-    pageStyle.forEach((page)=>(page.style = 'border: 1px solid #999'))
-
-    const currentPage = event?.target.id ?? 1
-    console.log(currentPage)
-    showItemsOfCurrentPage(currentPage)
-
-    const targetPageButton = document.getElementById(currentPage)
-    targetPageButton.style = 'background-color: LightSteelBlue'
-
+  return {
+    initialPage,
+    filterItemsHandler,
+    showItems
+  }
+ 
   }
 
-  const showPageNumbers = () => {
-    const totalPages = getTotalPages(products, rowsPerPage)
 
-    const paginateDiv = document.querySelector('.pagination')
-    for (let page = 1; page <= totalPages; page++) {
-      const buttonPage = document.createElement('button')
-      buttonPage.textContent = page
-      buttonPage.setAttribute('id', page)
-      paginateDiv.appendChild(buttonPage)
-      buttonPage.addEventListener('click', pageHandler) // add event
-    }
-  }
+// Node.js
+module.exports = itemList
 
-return {
-  showPageNumbers,
-  pageHandler
-}
-}
-
-
-// npm test CommonJS
-module.exports = paginateManagement
-
-// browser ES module
-// export { paginateManagement }
-// const { showPageNumbers,  pageHandler } =
-// paginateManagement(products, 10)
-// showPageNumbers()
-// pageHandler()
+//Browser
+// export { itemList }
+//
+// const { initialPage, filterItemsHandler, showItems } = itemList(products)
+// initialPage()
